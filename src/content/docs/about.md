@@ -1,13 +1,25 @@
 ---
 title: About
-description: Ahmad Asmar — Staff DevOps / Platform Lead. 3 years building Zencity's AWS-native platform. CKA. Open-source maintainer.
+description: Ahmad Asmar — Staff DevOps / Platform Lead. 6+ years across AWS, GCP, Azure. CKA. Open-source maintainer.
 ---
 
 ## Who I am
 
-I'm a **Staff DevOps / Platform Lead** with 3 years of end-to-end ownership of a SaaS-scale AWS platform — built from a hybrid Azure+AWS estate into a 20-account, 4-region, 20-EKS-cluster AWS-native platform serving 25+ microservices to 16+ named government customers across the US and UK.
+I'm a **Staff DevOps / Platform Lead** with **6+ years scaling cloud-native infrastructure across AWS, GCP, and Azure**. The last three of those as senior platform owner for a SaaS-scale AWS platform — built from a hybrid Azure+AWS estate into a 20-account, 4-region, 20-EKS-cluster system serving 25+ microservices to 16+ named government customers across the US and UK.
 
-I was the **sole DevOps engineer at Zencity for the first 18 months** (May 2023 → Nov 2024), then continued as the primary IC + de-facto platform owner for the next 18. When my eventual Team Lead joined, the meeting titles tell the story: *"Ahmad / Roey — Jira tasks"*, *"Ahmad / Roey — Datadog APM"* — I was onboarding *him* onto the stack I'd built.
+I was the **sole DevOps engineer at Zencity for the first 18 months** (May 2023 → Nov 2024), then primary IC + de-facto platform owner for the next 18. When the eventual Team Lead joined, I was onboarding *him* onto the stack I'd built.
+
+## Career
+
+| When | Role | Where |
+|---|---|---|
+| **May 2023 – present** (3 yr) | Senior DevOps Engineer | **Zencity** (via [ASAL Technologies](https://www.asaltech.com/)) — full platform ownership; AWS, EKS, GitOps, FinOps, security |
+| **Jun 2021 – May 2023** (2 yr) | DevOps Engineer L2 | **Freightos** — GCP, Kubernetes, GitOps with ArgoCD, CI/CD pipelines, monitoring, DNS / TLS |
+| **Jul 2020 – Jul 2021** (1 yr) | DevOps Engineer | **PDF Solutions** — cloud infrastructure as code, configuration management, customer-facing builds |
+| **May 2019 – Jul 2020** | IT Support Technician | **Partners for Sustainable Development** |
+| **Dec 2017 – Dec 2018** | IT Support Technician | **Palestine Telecommunications (Paltel) Group** — first professional role |
+
+Five roles, from IT support → DevOps → senior platform owner. The pattern across all of them: own the system end-to-end, automate the toil, document for the next person.
 
 ## What I work on
 
