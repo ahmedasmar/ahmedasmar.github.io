@@ -41,6 +41,7 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 				</div>
 				<nav class="colophon">
 					<a href="/projects/terraform-runner-module/">Projects</a>
+					<a href="https://medium.com/@ahmed.asmar" rel="noopener" target="_blank">Published</a>
 					<a href="/writing/scale-to-zero-runners/">Writing</a>
 					<a href="/stack/">Stack</a>
 					<a href="/about/">About</a>
@@ -211,6 +212,51 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 					</div>
 					<div class="ej-work-arrow">→</div>
 				</a>
+
+				<a class="ej-work" href="/projects/kyverno-fleet-rollout/">
+					<div class="ej-work-no">№ 05</div>
+					<div class="ej-work-body">
+						<div class="ej-work-title">
+							Kyverno fleet rollout <em>— policy-as-code on every cluster</em>
+						</div>
+						<p class="ej-work-blurb">
+							Auto-PDB ClusterPolicy on every multi-replica Deployment fleet-wide.
+							Observation-VPA generation via a separate-by-kind rule design. CRD
+							drift suppression for ArgoCD. Migrated from Terraform Helm onto an
+							ApplicationSet — 19 commits in <code>zc-gitops</code>.
+						</p>
+						<div class="ej-work-meta">
+							<span class="chip signal">Fleet-wide Sep 2025</span>
+							<span class="chip">Kyverno</span>
+							<span class="chip">VPA</span>
+							<span class="chip">ArgoCD</span>
+						</div>
+					</div>
+					<div class="ej-work-arrow">→</div>
+				</a>
+
+				<a class="ej-work" href="/projects/crossplane-iac-v2/">
+					<div class="ej-work-no">№ 06</div>
+					<div class="ej-work-body">
+						<div class="ej-work-title">
+							Crossplane <em>— IaC v2 bootstrap</em>
+						</div>
+						<p class="ej-work-blurb">
+							Crossplane v2.5.3 (Upbound) bootstrapped on the shared devops
+							clusters in Pipeline mode. The first usable Composition —
+							<code>AppWorkloadBucket</code> with S3 versioning + lifecycle + CORS
+							— shipped to prod. Declarative AWS resources reconciled by k8s
+							controllers instead of <code>terraform apply</code>.
+						</p>
+						<div class="ej-work-meta">
+							<span class="chip signal">v2.5.3 in prod</span>
+							<span class="chip">Crossplane</span>
+							<span class="chip">Upbound</span>
+							<span class="chip">XR / Composition</span>
+						</div>
+					</div>
+					<div class="ej-work-arrow">→</div>
+				</a>
 			</div>
 
 			<!-- Section: Practice -->
@@ -295,9 +341,62 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 				</div>
 			</div>
 
+			<!-- Section: Published -->
+			<div class="ej-rule" role="presentation">
+				<span class="label"><span class="ord">§ IV.</span> &nbsp;Published</span>
+				<span class="line"></span>
+				<span class="crosshair">+&nbsp;&nbsp;+&nbsp;&nbsp;+</span>
+			</div>
+
+			<div class="ej-works">
+				<a class="ej-work" href="https://medium.com/zencity-engineering/automating-pod-disruption-budgets-with-kyverno-0a6bee7bbcca" rel="noopener" target="_blank">
+					<div class="ej-work-no">M · 01</div>
+					<div class="ej-work-body">
+						<div class="ej-work-title">
+							Automating Pod Disruption Budgets <em>with Kyverno</em>
+						</div>
+						<p class="ej-work-blurb">
+							How Zencity used Kyverno to auto-generate PDBs for every microservice
+							that lacked one — preventing service downtime when Karpenter consolidates
+							nodes and closing the operational gap of "we forgot to add a PDB."
+						</p>
+						<div class="ej-work-meta">
+							<span class="chip signal">Zencity Engineering</span>
+							<span class="chip">Dec 2, 2025</span>
+							<span class="chip">Kyverno</span>
+							<span class="chip">Karpenter</span>
+						</div>
+					</div>
+					<div class="ej-work-arrow">↗</div>
+				</a>
+
+				<a class="ej-work" href="https://medium.com/@ahmed.asmar/building-a-local-dev-platform-with-kubernetes-tilt-and-local-gitlab-pipelines-ab534d428c82" rel="noopener" target="_blank">
+					<div class="ej-work-no">M · 02</div>
+					<div class="ej-work-body">
+						<div class="ej-work-title">
+							Building a Local Dev Platform <em>with Kubernetes, Tilt, and local GitLab pipelines</em>
+						</div>
+						<p class="ej-work-blurb">
+							A local dev platform that mirrors production: k3d + Traefik locally, EKS
+							in the cloud, identical Kustomize bases and overlays across environments.
+							Tilt for rapid feedback; GitLab CI for immutable image promotion from
+							staging to prod.
+						</p>
+						<div class="ej-work-meta">
+							<span class="chip signal">Medium</span>
+							<span class="chip">Apr 9, 2026</span>
+							<span class="chip">k3d</span>
+							<span class="chip">Tilt</span>
+							<span class="chip">GitLab CI</span>
+						</div>
+					</div>
+					<div class="ej-work-arrow">↗</div>
+				</a>
+			</div>
+
 			<!-- Section: Writing -->
 			<div class="ej-rule" role="presentation">
-				<span class="label"><span class="ord">§ IV.</span> &nbsp;Writing</span>
+				<span class="label"><span class="ord">§ V.</span> &nbsp;Writing</span>
 				<span class="line"></span>
 				<span class="crosshair">+&nbsp;&nbsp;+&nbsp;&nbsp;+</span>
 			</div>
@@ -437,6 +536,7 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 				<div class="links">
 					<a href="https://www.linkedin.com/in/ahmadasmar" rel="noopener">LinkedIn ↗</a>
 					<a href="https://github.com/ahmedasmar" rel="noopener">GitHub ↗</a>
+					<a href="https://medium.com/@ahmed.asmar" rel="noopener">Medium ↗</a>
 					<a href="https://registry.terraform.io/modules/ahmedasmar/gitlab-docker-autoscaler-runner/aws" rel="noopener">Terraform Registry ↗</a>
 					<a href="/stack/">Tech stack →</a>
 					<a href="/about/">About →</a>

@@ -17,6 +17,7 @@ export default defineConfig({
 			social: [
 				{ icon: 'github', label: 'GitHub', href: 'https://github.com/ahmedasmar' },
 				{ icon: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/ahmadasmar' },
+				{ icon: 'pencil', label: 'Medium articles', href: 'https://medium.com/@ahmed.asmar' },
 			],
 			editLink: {
 				baseUrl: 'https://github.com/ahmedasmar/ahmedasmar.github.io/edit/main/',
@@ -66,6 +67,8 @@ export default defineConfig({
 						{ label: 'DevOps Claude Skills', slug: 'projects/devops-claude-skills' },
 						{ label: 'Cross-Account TargetGroupBinding', slug: 'projects/cross-account-tgb' },
 						{ label: 'GitOps engine (ArgoCD)', slug: 'projects/gitops-engine' },
+						{ label: 'Kyverno fleet rollout', slug: 'projects/kyverno-fleet-rollout' },
+						{ label: 'Crossplane — IaC v2', slug: 'projects/crossplane-iac-v2' },
 					],
 				},
 				{

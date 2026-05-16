@@ -45,4 +45,5 @@ Open to **Staff / Senior DevOps · Platform Engineering · SRE** roles.
 
 - **LinkedIn:** [linkedin.com/in/ahmadasmar](https://www.linkedin.com/in/ahmadasmar)
 - **GitHub:** [@ahmedasmar](https://github.com/ahmedasmar) — also at [@ahmad-asmar](https://github.com/ahmad-asmar) for Commonplace org contributions
+- **Medium:** [@ahmed.asmar](https://medium.com/@ahmed.asmar) — including *["Automating Pod Disruption Budgets with Kyverno"](https://medium.com/zencity-engineering/automating-pod-disruption-budgets-with-kyverno-0a6bee7bbcca)* (Zencity Engineering, Dec 2, 2025) and *["Building a Local Dev Platform with Kubernetes, Tilt, and local GitLab pipelines"](https://medium.com/@ahmed.asmar/building-a-local-dev-platform-with-kubernetes-tilt-and-local-gitlab-pipelines-ab534d428c82)* (Apr 9, 2026)
 - This site is open source: [github.com/ahmedasmar/ahmedasmar.github.io](https://github.com/ahmedasmar/ahmedasmar.github.io)
