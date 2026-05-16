@@ -203,7 +203,7 @@ The readiness gate breaks the cycle: step 4 doesn't happen because the pod isn't
 
 ## Roll-out at scale
 
-This pattern was **end-to-end validated on `lab-staging` → shared-edge** on May 12, 2026. The next day (May 13), it rolled to all six staging clusters (`lab`, `shared`, `platform`, `engage`, `organic`, `survey`) — Pod Identity association, cross-account IAM role, TargetGroupBinding CRDs, SG egress rules, readiness gates — using the ArgoCD ApplicationSet pattern from [GitOps engine](/architecture/gitops-engine/) to fan out the cluster-side config.
+This pattern was **end-to-end validated on `lab-staging` → shared-edge** on May 12, 2026. The next day (May 13), it rolled to all six staging clusters (`lab`, `shared`, `platform`, `engage`, `organic`, `survey`) — Pod Identity association, cross-account IAM role, TargetGroupBinding CRDs, SG egress rules, readiness gates — using the ArgoCD ApplicationSet pattern from [GitOps engine](/writing/gitops-engine/) to fan out the cluster-side config.
 
 ## Related
 

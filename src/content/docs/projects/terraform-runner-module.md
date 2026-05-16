@@ -122,6 +122,6 @@ Five required-ish variables; everything else is opinionated defaults that match 
 
 ## Related
 
-- [Scale-to-zero runner architecture deep-dive](/architecture/scale-to-zero-runners/) — design walkthrough
+- [Scale-to-zero runner architecture deep-dive](/writing/scale-to-zero-runners/) — design walkthrough
 - [GitHub: terraform-aws-gitlab-docker-autoscaler-runner](https://github.com/ahmedasmar/terraform-aws-gitlab-docker-autoscaler-runner)
 - [Terraform Registry](https://registry.terraform.io/modules/ahmedasmar/gitlab-docker-autoscaler-runner/aws)

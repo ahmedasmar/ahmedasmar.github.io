@@ -82,5 +82,5 @@ And it's the kind of architecture call that depends on knowing AWS LBC v3 capabi
 
 ## Related
 
-- [Cross-account TGB architecture walkthrough](/architecture/cross-account-tgb/) — design deep-dive with the IAM + SG topology
+- [Cross-account TGB architecture walkthrough](/writing/cross-account-tgb/) — design deep-dive with the IAM + SG topology
 - [GitHub: AWS Load Balancer Controller](https://github.com/kubernetes-sigs/aws-load-balancer-controller) — the upstream project this builds on

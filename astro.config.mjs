@@ -8,7 +8,8 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'Ahmad Asmar',
-			description: 'Staff DevOps / Platform Lead — AWS, EKS, GitOps, OSS maintainer (3,767 Terraform Registry downloads · 158★ Claude Code skills marketplace).',
+			description:
+				'Staff DevOps / Platform Lead — AWS, EKS, GitOps, OSS maintainer (3,767 Terraform Registry downloads · 158★ Claude Code skills marketplace).',
 			logo: {
 				src: './src/assets/avatar.svg',
 				replacesTitle: false,
@@ -26,6 +27,28 @@ export default defineConfig({
 			customCss: ['./src/styles/custom.css'],
 			head: [
 				{
+					tag: 'link',
+					attrs: {
+						rel: 'preconnect',
+						href: 'https://fonts.googleapis.com',
+					},
+				},
+				{
+					tag: 'link',
+					attrs: {
+						rel: 'preconnect',
+						href: 'https://fonts.gstatic.com',
+						crossorigin: '',
+					},
+				},
+				{
+					tag: 'link',
+					attrs: {
+						rel: 'stylesheet',
+						href: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap',
+					},
+				},
+				{
 					tag: 'meta',
 					attrs: { property: 'og:image', content: 'https://ahmedasmar.github.io/og-image.png' },
 				},
@@ -35,7 +58,7 @@ export default defineConfig({
 				},
 			],
 			sidebar: [
-				{ label: 'Home', slug: '' },
+				{ label: 'Home', link: '/' },
 				{
 					label: 'Projects',
 					items: [
@@ -46,11 +69,14 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Architecture',
+					label: 'Writing',
 					items: [
-						{ label: 'Scale-to-zero runners', slug: 'architecture/scale-to-zero-runners' },
-						{ label: 'Cross-account TargetGroupBinding', slug: 'architecture/cross-account-tgb' },
-						{ label: 'Terraform → ArgoCD migration', slug: 'architecture/gitops-engine' },
+						{ label: 'Cross-account TargetGroupBinding (AWS LBC v3)', slug: 'writing/cross-account-tgb' },
+						{ label: 'EKS major-version upgrade — fleet playbook', slug: 'writing/eks-major-version-upgrade' },
+						{ label: 'GitOps engine — Terraform → ArgoCD', slug: 'writing/gitops-engine' },
+						{ label: 'Modern Terraform CI/CD on GitLab', slug: 'writing/modern-terraform-cicd' },
+						{ label: 'EKS Pod Identity — fleet rollout', slug: 'writing/pod-identity-rollout' },
+						{ label: 'Scale-to-zero GitLab runners', slug: 'writing/scale-to-zero-runners' },
 					],
 				},
 				{ label: 'Stack', slug: 'stack' },

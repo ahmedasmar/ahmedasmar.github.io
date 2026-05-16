@@ -126,7 +126,7 @@ Quick-reference of what I ran in production. Useful if you're sizing whether my 
 - Stable cache keys based on `package-lock.json` (fixed cross-tag cache misses)
 - Skip on `.infra/`-only commits
 
-**Runners** ([detailed architecture](/architecture/scale-to-zero-runners/))
+**Runners** ([detailed architecture](/writing/scale-to-zero-runners/))
 
 - Self-hosted on EC2 (Zencity Group level)
 - ARM64 (Graviton) + 100% Spot + ASG autoscaling

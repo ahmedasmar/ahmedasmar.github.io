@@ -72,6 +72,6 @@ By layoff, only `karpenter` and the deprecating `nginx-ingress` remained on Terr
 
 ## Related
 
-- [GitOps engine architecture walkthrough](/architecture/gitops-engine/) — design + bootstrap deep-dive
+- [GitOps engine architecture walkthrough](/writing/gitops-engine/) — design + bootstrap deep-dive
 - [Cross-account TargetGroupBinding](/projects/cross-account-tgb/) — depends on the workload-cluster AWS LBC also being ArgoCD-managed
 - [DevOps Claude Skills](/projects/devops-claude-skills/) — `argocd-eks-cluster-onboard` skill packages the cluster registration flow
