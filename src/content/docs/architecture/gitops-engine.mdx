@@ -1,0 +1,218 @@
+---
+title: GitOps engine — Terraform → ArgoCD
+description: How the migration from Terraform-managed Helm to ArgoCD ApplicationSets actually shipped, addon by addon, with zero downtime.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+This page complements the [project page](/projects/gitops-engine/) with the design choices and the migration sequence.
+
+## The architecture
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                                                                          │
+│   ┌───────────────────────────────────────────────┐                      │
+│   │  zc-gitops (Git, the source of truth)         │                      │
+│   │    - bootstrap/                               │                      │
+│   │    - applicationsets/                         │                      │
+│   │    - cluster-overrides/                       │                      │
+│   └───────────────────────────────────────────────┘                      │
+│                       │                                                  │
+│                       ▼                                                  │
+│   ┌───────────────────────────────────────────────┐                      │
+│   │  ArgoCD on shared-staging-devops              │                      │
+│   │  ArgoCD on shared-prod-devops                 │                      │
+│   │    - app-of-apps bootstrap                    │                      │
+│   │    - ApplicationSet controller                │                      │
+│   │    - Server-Side Diff enabled                 │                      │
+│   │    - webhook HA (2 replicas in prod)          │                      │
+│   │    - JumpCloud SSO                            │                      │
+│   └───────────────────────────────────────────────┘                      │
+│         │           │           │            │           │               │
+│         ▼           ▼           ▼            ▼           ▼               │
+│   ┌─────────┐ ┌─────────┐ ┌─────────┐  ┌─────────┐ ┌─────────┐           │
+│   │ lab     │ │ shared  │ │ platform│  │ engage  │ │ survey  │  ...      │
+│   │ workload│ │ workload│ │ workload│  │ workload│ │ workload│           │
+│   │  EKS    │ │  EKS    │ │  EKS    │  │  EKS    │ │  EKS    │           │
+│   └─────────┘ └─────────┘ └─────────┘  └─────────┘ └─────────┘           │
+│                                                                          │
+│   Each workload cluster is registered to ArgoCD via                       │
+│   Pod Identity + AssumeRole — NO bearer tokens.                           │
+│                                                                          │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+## Why two devops clusters
+
+`shared-staging-devops` and `shared-prod-devops` are isolated from workload clusters intentionally:
+
+- A workload-cluster outage (k8s upgrade, capacity blip, blast-radius incident) doesn't take down the controller for the rest of the fleet.
+- Upgrade cadence of the engine cluster is decoupled from workload upgrades — I upgrade the engine on a slower, more conservative schedule.
+- IAM, secrets, SSO, RBAC live in one cluster per environment instead of being smeared across 5+ workload clusters.
+
+Two clusters (not one) because **staging-engine should never have IAM that can sync prod targets**. The prod-engine cluster lives in a separate AWS account with separate trust to the prod target accounts. Blast-radius enforcement at the AWS IAM layer.
+
+## Self-managing app-of-apps
+
+The bootstrap looks like:
+
+```yaml
+# bootstrap/root.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://gitlab.com/zencity/zc-gitops.git
+    path: applicationsets/
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+```
+
+Then `applicationsets/` contains:
+
+- `argocd-self.yaml` — an ApplicationSet that manages **ArgoCD itself** (the controller's own Helm chart)
+- `addons-foundation.yaml` — cert-manager, external-secrets, external-dns, AWS LBC
+- `addons-policy.yaml` — Kyverno, VPA
+- `addons-observability.yaml` — datadog-operator (dormant scaffolding), metrics-server, node-local-dns
+
+After the very first `terraform apply` to lay down `bootstrap/root.yaml`, the `terraform import` block was removed. The platform now reconciles its own desired state — change a chart version in Git, ArgoCD picks it up, applies fleet-wide.
+
+## ApplicationSet fan-out
+
+Example: cert-manager across all workload clusters
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cert-manager
+  namespace: argocd
+spec:
+  generators:
+    - clusters:
+        selector:
+          matchLabels:
+            workload-cluster: "true"
+  template:
+    metadata:
+      name: 'cert-manager-{{name}}'
+    spec:
+      project: addons
+      source:
+        repoURL: https://gitlab.com/zencity/zc-gitops.git
+        path: charts/cert-manager
+        targetRevision: main
+        helm:
+          valueFiles:
+            - 'values.yaml'
+            - 'cluster-overrides/{{name}}/cert-manager.yaml'  # optional per-cluster
+      destination:
+        server: '{{server}}'
+        namespace: cert-manager
+      syncPolicy:
+        automated: { prune: true, selfHeal: true }
+        syncOptions:
+          - ServerSideApply=true
+          - CreateNamespace=true
+```
+
+When a new cluster gets the `workload-cluster: "true"` label in ArgoCD's cluster registry, **cert-manager appears in that cluster automatically** — no PR, no manual `helm install`.
+
+## Server-Side Diff
+
+ArgoCD's classic diff strategy compares full rendered manifests. That generates noise on resources that admission webhooks or CRD controllers mutate after creation — for example, the `caBundle` field on a `MutatingWebhookConfiguration`, or controller-managed annotations.
+
+Server-Side Diff defers diffing to the API server's strategic-merge-patch logic — only fields the *manager* (ArgoCD) owns are compared. Result: no more `OutOfSync` on cosmetic mutations. Enabled at the controller level:
+
+```yaml
+data:
+  controller.diff.server.side.diff: "true"
+  controller.sync.server.side.apply: "true"
+```
+
+## Cluster registration without bearer tokens
+
+The default `argocd cluster add` flow:
+
+1. Creates a `ServiceAccount` in the target cluster
+2. Generates a Secret containing the SA's bearer token
+3. Stores the token in ArgoCD's cluster registry as a Secret
+
+Three problems: long-lived credentials, cluster-bound credentials living in another cluster, and no rotation story. So I built the alternative:
+
+<Steps>
+
+1. **Workload cluster has an EKS Access Entry** mapped to a cluster-admin (or namespace-scoped) k8s RBAC role:
+
+   ```hcl
+   resource "aws_eks_access_entry" "argocd" {
+     cluster_name      = module.eks.cluster_name
+     principal_arn     = aws_iam_role.argocd_cluster_role.arn
+     kubernetes_groups = ["system:masters"]  # or scoped
+   }
+   ```
+
+2. **The role in the workload account** (`argocd_cluster_role`) has a trust policy permitting the ArgoCD Pod Identity role in the engine account to assume it:
+
+   ```json
+   {
+     "Effect": "Allow",
+     "Principal": { "AWS": "arn:aws:iam::ENGINE_ACCOUNT:role/argocd-pod-identity" },
+     "Action": "sts:AssumeRole"
+   }
+   ```
+
+3. **ArgoCD pods in the engine cluster** run with a Pod Identity association mapped to `argocd-pod-identity` — no static creds, no IRSA OIDC fan-out.
+
+4. **Register the cluster in ArgoCD** with the AssumeRole config (via the `argocd cluster add` `--aws-cluster-name` + `--aws-role-arn` flags or, equivalently, a Secret of `type: cluster` with `awsAuthConfig` set).
+
+5. **Result:** No bearer token is ever written. EKS auth flows through STS AssumeRole, expiring tokens are refreshed by the AWS SDK transparently, and access can be revoked by deleting the IAM role / Access Entry — no Secret rotation needed.
+
+</Steps>
+
+I packaged this end-to-end as the [`argocd-eks-cluster-onboard` Claude Code skill](https://github.com/ahmedasmar/devops-claude-skills) so it's runnable in 5 minutes for a new cluster.
+
+## Migration sequence
+
+Migrating an addon from Terraform Helm to ArgoCD without downtime:
+
+<Steps>
+
+1. **Author the chart** under `zc-gitops/charts/<addon>/` matching the current Terraform `helm_release` values.
+
+2. **Add the ApplicationSet** but with `syncPolicy.automated: {}` *off* — so it doesn't auto-apply yet.
+
+3. **Generate the cluster** (the cluster-list / git-files Generator) — confirm the Application appears in ArgoCD with `OutOfSync` status and a diff of zero (because Terraform already applied the same chart).
+
+4. **`terraform state rm` the `helm_release`** so Terraform stops managing it. Verify `terraform plan` is clean.
+
+5. **Enable automated sync** on the ApplicationSet's template — ArgoCD takes over reconciliation.
+
+6. **Bump the chart version in Git** — verify it flows to the cluster via ArgoCD.
+
+</Steps>
+
+Step 4 is the moment of truth. If the chart values in the Terraform module don't *exactly* match what's rendered into the cluster, ArgoCD will see a diff and try to apply it on takeover, potentially restarting workloads. Carefully audit values before this step.
+
+<Aside title="Trust the Server-Side Diff">
+The first migrations were painful because classic Diff would flag dozens of cosmetic fields as `OutOfSync`. Once Server-Side Diff was enabled at the controller level, the noise dropped 95% and the takeover step became routine.
+</Aside>
+
+## Where it landed
+
+By layoff (May 13, 2026), only `karpenter` and the deprecating `nginx-ingress` remained on Terraform-managed Helm. Every other addon is reconciled by ArgoCD ApplicationSets from `zc-gitops`. Karpenter is intentionally last because its `helm_release` is referenced by the EKS module — moving it requires module refactoring rather than a clean addon swap.
+
+## Related
+
+- [GitOps engine project page](/projects/gitops-engine/) — the numbers and where the migration landed
+- [Cross-account TGB architecture](/architecture/cross-account-tgb/) — the AWS LBC in workload clusters that this engine deploys
+- [GitHub: devops-claude-skills](https://github.com/ahmedasmar/devops-claude-skills) — `gitops-helm-onboard` + `argocd-eks-cluster-onboard` skills package this flow

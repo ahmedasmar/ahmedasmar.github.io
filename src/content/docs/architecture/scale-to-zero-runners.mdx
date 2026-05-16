@@ -1,0 +1,136 @@
+---
+title: Scale-to-zero GitLab runners
+description: How a CI workload arrives, an EC2 Spot instance boots, runs the job, and the ASG returns to zero — with no idle cost between jobs.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The [Terraform module](/projects/terraform-runner-module/) implements a pattern that's straightforward in the abstract but has a lot of moving parts in production. This page walks through the design.
+
+## The shape
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│  GitLab CI job submitted                                           │
+└────────────────────────────────────────────────────────────────────┘
+                  │
+                  ▼ poll / webhook
+┌────────────────────────────────────────────────────────────────────┐
+│  GitLab Runner Manager (t4g.small, always-on, ARM64)                │
+│    - registered with GitLab (auth_token)                            │
+│    - configured with the Docker Autoscaler executor                 │
+│    - uses the Fleeting plugin: provider = aws                       │
+└────────────────────────────────────────────────────────────────────┘
+                  │
+                  ▼ Fleeting → SetDesiredCapacity(+1) on the ASG
+┌────────────────────────────────────────────────────────────────────┐
+│  Worker ASG                                                          │
+│    min_size = 0, desired_capacity = 0  (literal scale-to-zero)       │
+│    MixedInstancesPolicy:                                             │
+│      - attribute-based selection (vCPU + memory + arch)              │
+│      - 100% Spot (on_demand_base_capacity = 0)                       │
+│      - spot_allocation_strategy = price-capacity-optimized           │
+│      - capacity_rebalance = false                                    │
+│      - protect_from_scale_in = true                                  │
+└────────────────────────────────────────────────────────────────────┘
+                  │
+                  ▼ EC2 spot instance launches with custom AMI (Packer)
+┌────────────────────────────────────────────────────────────────────┐
+│  Worker EC2 (lifetime: ~minutes per job, 2 jobs / instance default) │
+│    - Docker pre-installed in the AMI                                │
+│    - Fleeting plugin SSHes in & runs the GitLab job in Docker       │
+│    - On job end: instance terminated by Fleeting (or scale-in)      │
+└────────────────────────────────────────────────────────────────────┘
+                  │
+                  ▼ Job artifacts + cache pushed to S3
+┌────────────────────────────────────────────────────────────────────┐
+│  S3 cache bucket (isolated per runner, 30-day lifecycle)             │
+└────────────────────────────────────────────────────────────────────┘
+                  │
+                  ▼ ASG scales back to zero
+                  [done]
+```
+
+## Why each piece is where it is
+
+### Manager on `t4g.small`, always-on, ARM64
+
+The manager is the only piece that's always-on — it has to receive the job webhook from GitLab. `t4g.small` is the cheapest viable instance: Graviton ARM64, burstable, 1 GiB memory. Operating cost: a few dollars / month.
+
+### Fleeting plugin (not docker-machine)
+
+`docker-machine` is deprecated. Fleeting is GitLab's modern AWS-native provider plugin. Critically, it talks to the ASG via the AWS API (SetDesiredCapacity) instead of provisioning EC2 directly — meaning the ASG owns the launch config, the Spot strategy, the IAM, the user-data.
+
+### 100% Spot by default
+
+```hcl
+on_demand_base_capacity                    = 0
+on_demand_percentage_above_base_capacity   = 0
+```
+
+For CI workloads, an interrupted job retries on a fresh runner. The economics massively favour Spot — 70–90% off On-Demand at fleet scale. Production-critical *services* are different; **CI is the textbook case for 100% Spot.**
+
+### `price-capacity-optimized` spot allocation
+
+Three Spot allocation strategies exist:
+
+| Strategy | When |
+|---|---|
+| `lowest-price` | Cost-only optimisation. Interrupts more. Wrong for CI. |
+| `capacity-optimized` | Picks deepest pool. Costs more. Useful for long-running batch. |
+| `price-capacity-optimized` | Balances both. **AWS's current recommendation. Right default for CI.** |
+
+### `capacity_rebalance = false` — opposite of what you might think
+
+When this is `true`, AWS proactively replaces instances that have a rising interruption forecast. For long-running services that's helpful. **For CI it's harmful** — it surfaces as "instance disappeared mid-build" failures. Better to let the job finish and let actual Spot interruption notices handle next-job placement.
+
+### `protect_from_scale_in = true`
+
+The ASG can't externally terminate a runner while a job is running. Without this, you'd see ASG cool-down triggered scale-in killing in-flight jobs.
+
+### Attribute-based instance selection
+
+```hcl
+vcpu_count_min          = 2
+vcpu_count_max          = 4
+memory_mib_min          = 8192
+memory_mib_max          = 16384
+allowed_instance_types  = ["c*", "m*", "r*"]
+burstable_performance   = "included"
+local_storage_types     = ["ssd"]
+instance_generations    = ["current"]
+```
+
+Critical for production Spot stability. A fixed `m5.large` ASG hits `UnfulfillableCapacity` the moment that single type is scarce in the AZ. With attribute-based selection, AWS picks from *any* current-gen c/m/r-family type matching the spec — a much deeper pool.
+
+T-series is *included* via `burstable_performance = "included"` because for short CI jobs the burst credits absorb the CPU cost. For long-running jobs you'd `excluded` it.
+
+### Per-instance 2-job reuse
+
+GitLab Runner's `capacity_per_instance` lets a single worker serve N jobs in sequence before being terminated. Setting it to 2 amortises boot cost meaningfully — without paying the latency cost of N≥3 where a stuck job blocks the second slot.
+
+### S3 cache, isolated per runner pool
+
+```hcl
+enable_s3_cache           = true
+s3_cache_expiration_days  = 30
+```
+
+Each runner pool gets its own bucket. Lifecycle policy bounds cost. Critical for Node.js / Python jobs where the node_modules / `.venv` is the bulk of the work.
+
+### Custom Packer AMI
+
+`docker-ami.pkr.hcl` produces a base AMI with Docker pre-installed and the cgroup/seccomp / containerd configuration runners need. Without it, every cold-start pays a Docker-install tax (~30–60s). With it, cold-start is just kernel + Docker daemon.
+
+## Cost shape
+
+A fleet running 200 CI jobs/day at ~5 min/job, 2-job reuse → ~100 instance-hours/day. On a `c6g.large` Spot at ~$0.025/hr that's **~$2.50/day in worker compute** plus the t4g.small manager (~$8/month). Compare to a fixed 4× `c6g.large` On-Demand always-on fleet ($240/month) — **roughly 7-8× cheaper** for the same throughput, with better instance availability via attribute-based selection.
+
+<Aside title="The numbers are deliberately conservative">
+Real fleet usage at Zencity bursted into the hundreds of jobs concurrently during a deploy window, then sat near-idle overnight. The "always-on" baseline would have had to size for the peak — multiplying the cost gap further.
+</Aside>
+
+## Related
+
+- [Terraform module page](/projects/terraform-runner-module/) — code, registry, full var list
+- [GitHub source](https://github.com/ahmedasmar/terraform-aws-gitlab-docker-autoscaler-runner)

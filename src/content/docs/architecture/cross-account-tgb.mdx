@@ -1,0 +1,211 @@
+---
+title: Cross-account TargetGroupBinding
+description: Architecture walkthrough — IAM trust, security-group topology, and the AWS LBC v3 reconciliation that makes the NLB hop go away.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+This page is the design deep-dive that complements the [project page](/projects/cross-account-tgb/). It covers the IAM threading, the SG topology, and the controller config that actually makes this work in production.
+
+## The topology
+
+There are two AWS accounts. Both have VPCs connected via **Transit Gateway** (Zencity is peering-free by policy).
+
+```
+                              Internet
+                                 │
+                                 ▼
+        ┌────────────────────────────────────────────────┐
+        │  AWS account A — "edge" (e.g. shared-staging)   │
+        │                                                 │
+        │   ACM cert     ALB                              │
+        │       │         │                               │
+        │       └────────▶│   Listener :443 → TG-1        │
+        │                 ▼                               │
+        │              TargetGroup-1                       │
+        │               (type: ip)                          │
+        │                  ▲                               │
+        │                  │ pod-IPs registered             │
+        │                  │ (cross-account)                │
+        │                  │                                │
+        │      ┌───────────┴──────────────┐                 │
+        │      │ AWS-assumable role for   │                 │
+        │      │ AWS LBC in account B     │                 │
+        │      └──────────────────────────┘                 │
+        └────────────────────────────────────────────────┘
+                                 │
+                              (TGW)
+                                 │
+        ┌────────────────────────────────────────────────┐
+        │  AWS account B — "workload" (e.g. engage-staging)│
+        │                                                  │
+        │   EKS cluster                                    │
+        │      │                                           │
+        │      ▼                                           │
+        │   AWS LBC pod ─── Pod Identity ─── IAM role      │
+        │      │                              in account B │
+        │      │                              │            │
+        │      │                              ▼            │
+        │      │            sts:AssumeRole into account A  │
+        │      │                              │            │
+        │      ▼                              │            │
+        │   TargetGroupBinding CRD            │            │
+        │     spec:                           │            │
+        │       targetGroupARN: arn:...:A/TG-1│            │
+        │       serviceRef: my-app-svc        │            │
+        │                                     ▼            │
+        │   App Service ──── pods (account B's pod CIDR) ──┘
+        │                            │
+        │                            ▼
+        │   ALB target health probes → pod IPs (cross-account, via TGW)
+        └────────────────────────────────────────────────┘
+```
+
+## The IAM thread
+
+Three roles matter:
+
+### 1. AWS LBC's Pod Identity role (account B)
+
+The Pod Identity association binds the AWS LBC ServiceAccount to an IAM role in **account B**. That role has the LBC's normal permissions on B's resources, plus:
+
+```json
+{
+  "Effect": "Allow",
+  "Action": "sts:AssumeRole",
+  "Resource": "arn:aws:iam::ACCOUNT_A:role/aws-lbc-cross-account"
+}
+```
+
+### 2. The cross-account role (account A)
+
+In account A, a role exists that account B's Pod Identity role can assume:
+
+```json
+// trust policy
+{
+  "Effect": "Allow",
+  "Principal": { "AWS": "arn:aws:iam::ACCOUNT_B:role/aws-lbc-pod-identity" },
+  "Action": "sts:AssumeRole"
+}
+```
+
+```json
+// permissions policy
+{
+  "Effect": "Allow",
+  "Action": [
+    "elasticloadbalancing:DescribeTargetHealth",
+    "elasticloadbalancing:DescribeTargetGroups",
+    "elasticloadbalancing:RegisterTargets",
+    "elasticloadbalancing:DeregisterTargets"
+  ],
+  "Resource": "arn:aws:elasticloadbalancing:REGION:ACCOUNT_A:targetgroup/*"
+}
+```
+
+Note: scope-down to specific target-group ARN patterns if you want stricter blast radius.
+
+### 3. EC2 / VPC permissions stay in account B
+
+The AWS LBC still needs `ec2:DescribeInstances`, `ec2:DescribeSecurityGroups`, etc. — but those are on account B's own resources and don't need cross-account threading.
+
+## The TargetGroupBinding CRD
+
+Once IAM is wired, you teach the cluster about the cross-account target group:
+
+```yaml
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  name: my-app-tgb
+  namespace: apps
+spec:
+  serviceRef:
+    name: my-app
+    port: 80
+  targetGroupARN: arn:aws:elasticloadbalancing:us-east-1:ACCOUNT_A:targetgroup/my-app-tg/abcd1234
+  targetType: ip
+  ipAddressType: ipv4
+  # health-check config inherits from the TG itself; no override needed
+```
+
+The AWS LBC reconciles this, calls `RegisterTargets` against account A's target group (via the AssumeRole), and the ALB starts seeing pod IPs from account B's pod CIDR.
+
+## Security groups — the often-missed part
+
+The ALB in account A has its own SG. That SG's **outbound rule** has to allow egress to the workload pod CIDR in account B. Since cross-account SG references don't compose across TGW-routed accounts, you do this with CIDR rules:
+
+```hcl
+resource "aws_security_group_rule" "alb_egress_to_workload_pod_cidr" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 65535
+  protocol          = "tcp"
+  cidr_blocks       = [var.workload_account_pod_cidr]
+  security_group_id = aws_security_group.alb.id
+}
+```
+
+Similarly, the workload-side pod-SG (or `securityGroup` on the EKS managed node group / Karpenter NodePool) needs to allow ingress from the ALB SG's CIDR (the ALB VPC's CIDR is sufficient if you're not pinpointing).
+
+<Aside type="caution" title="Don't forget VPC CNI security-group-per-pod">
+If you're running `aws-vpc-cni` with `ENABLE_POD_ENI=true`, the SG rules apply to the per-pod ENI's SG, not the node SG. Update accordingly or scope the pod SG via `SecurityGroupPolicy`.
+</Aside>
+
+## Pod readiness gate
+
+Without a readiness gate, the ALB's `target.health = healthy` and the Kubernetes `pod.status.ready = true` race. A rolling deploy can take down old pods before the new pods are healthy in the ALB, dropping connections.
+
+The AWS LBC ships a [pod readiness gate](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/deploy/pod_readiness_gate/) that holds the pod in `Ready=false` until the ALB has the target marked healthy. Turn it on per-namespace:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: apps
+  labels:
+    elbv2.k8s.aws/pod-readiness-gate-inject: enabled
+```
+
+Now rolling deploys are health-aware end-to-end.
+
+## What changed at controller config
+
+In the AWS LBC Helm values, add:
+
+```yaml
+serviceAccount:
+  create: false
+  name: aws-load-balancer-controller
+# Pod Identity association set in account B's IAM, not here
+controller:
+  extraArgs:
+    - --aws-region=us-east-1
+    - --cluster-name=engage-staging
+    # No flag is needed for AssumeRole — the SDK picks it up from the
+    # AssumeRole policy attached to the Pod Identity role.
+```
+
+The trick is **no special LBC flag is needed for the cross-account reconcile**. The TargetGroupBinding's `targetGroupARN` field tells the controller which account to operate on; the SDK resolves credentials via the AssumeRole chain the Pod Identity role exposes.
+
+## Health-check loop gotcha
+
+Without the pod readiness gate, a flapping target can trigger:
+
+1. Pod boots, registers as target (cross-account)
+2. Pod's first request is the ALB health check; the app isn't warm; check fails
+3. ALB marks target unhealthy → pod isn't sent traffic
+4. Pod is still `Ready=true` in Kubernetes, so a rolling deploy moves on to the next pod
+5. Old pod was terminated → no healthy targets → 503
+
+The readiness gate breaks the cycle: step 4 doesn't happen because the pod isn't Kubernetes-Ready until ALB-healthy.
+
+## Roll-out at scale
+
+This pattern was **end-to-end validated on `lab-staging` → shared-edge** on May 12, 2026. The next day (May 13), it rolled to all six staging clusters (`lab`, `shared`, `platform`, `engage`, `organic`, `survey`) — Pod Identity association, cross-account IAM role, TargetGroupBinding CRDs, SG egress rules, readiness gates — using the ArgoCD ApplicationSet pattern from [GitOps engine](/architecture/gitops-engine/) to fan out the cluster-side config.
+
+## Related
+
+- [Cross-account TGB project page](/projects/cross-account-tgb/) — the why and where it landed
+- [AWS LBC TargetGroupBinding docs](https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/guide/targetgroupbinding/spec/)
