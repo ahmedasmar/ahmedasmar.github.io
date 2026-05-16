@@ -180,7 +180,7 @@ ul.top-level li > details > summary {
 	display: grid;
 	grid-template-columns: 1fr auto;
 	align-items: baseline;
-	gap: 2rem;
+	gap: 0.5rem 2rem;
 	padding-bottom: 1rem;
 	border-bottom: 1px solid var(--rule);
 	font-family: var(--sl-font-mono);
@@ -189,9 +189,29 @@ ul.top-level li > details > summary {
 	text-transform: uppercase;
 	color: var(--ink-mute);
 }
-.ej-masthead .colophon { display: flex; gap: 1.5rem; align-items: baseline; }
-.ej-masthead a { color: var(--ink); text-decoration: none; border-bottom: 1px dotted var(--ink-mute); padding-bottom: 1px; }
+.ej-masthead .colophon {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1.5rem;
+	align-items: baseline;
+}
+.ej-masthead a {
+	color: var(--ink);
+	text-decoration: none;
+	border-bottom: 1px dotted var(--ink-mute);
+	padding-bottom: 1px;
+	white-space: nowrap;
+}
 .ej-masthead a:hover { color: var(--cadmium); border-bottom-color: var(--cadmium); }
+
+@media (max-width: 640px) {
+	.ej-masthead {
+		grid-template-columns: 1fr;
+		font-size: 0.7rem;
+		letter-spacing: 0.06em;
+	}
+	.ej-masthead .colophon { gap: 0.4rem 1rem; }
+}
 
 .ej-vol {
 	font-variant-numeric: tabular-nums;
@@ -253,12 +273,12 @@ ul.top-level li > details > summary {
 	background: var(--cadmium);
 }
 
-/* Section divider with crosshairs */
+/* Section divider with crosshairs — single-row grid: [label] [line] [crosshair] */
 .ej-rule {
 	display: grid;
 	grid-template-columns: auto 1fr auto;
 	align-items: center;
-	gap: 0.5rem;
+	gap: 0.75rem;
 	margin: clamp(3rem, 6vw, 4rem) 0 clamp(1.5rem, 3vw, 2rem);
 	color: var(--ink-mute);
 	font-family: var(--sl-font-mono);
@@ -266,13 +286,13 @@ ul.top-level li > details > summary {
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
 }
-.ej-rule .label { padding-right: 0.5rem; }
+.ej-rule .label { padding-right: 0.5rem; white-space: nowrap; }
 .ej-rule .ord { color: var(--cadmium); }
-.ej-rule::before,
-.ej-rule .line { content: ''; display: block; height: 1px; background: var(--rule); }
+.ej-rule .line { display: block; height: 1px; background: var(--rule); min-width: 0; }
 .ej-rule .crosshair {
 	color: var(--rule);
 	font-family: var(--sl-font-mono);
+	white-space: nowrap;
 }
 
 /* TL;DR — editorial paragraph with drop cap */
