@@ -13,7 +13,7 @@ This page complements the [project page](/projects/gitops-engine/) with the desi
 ┌────────────────────────────────────────────────────────────────────────┐
 │                                                                          │
 │   ┌───────────────────────────────────────────────┐                      │
-│   │  zc-gitops (Git, the source of truth)         │                      │
+│   │  gitops-repo (Git, the source of truth)         │                      │
 │   │    - bootstrap/                               │                      │
 │   │    - applicationsets/                         │                      │
 │   │    - cluster-overrides/                       │                      │
@@ -21,8 +21,8 @@ This page complements the [project page](/projects/gitops-engine/) with the desi
 │                       │                                                  │
 │                       ▼                                                  │
 │   ┌───────────────────────────────────────────────┐                      │
-│   │  ArgoCD on shared-staging-devops              │                      │
-│   │  ArgoCD on shared-prod-devops                 │                      │
+│   │  ArgoCD on staging-devops              │                      │
+│   │  ArgoCD on prod-devops                 │                      │
 │   │    - app-of-apps bootstrap                    │                      │
 │   │    - ApplicationSet controller                │                      │
 │   │    - Server-Side Diff enabled                 │                      │
@@ -45,7 +45,7 @@ This page complements the [project page](/projects/gitops-engine/) with the desi
 
 ## Why two devops clusters
 
-`shared-staging-devops` and `shared-prod-devops` are isolated from workload clusters intentionally:
+`staging-devops` and `prod-devops` are isolated from workload clusters intentionally:
 
 - A workload-cluster outage (k8s upgrade, capacity blip, blast-radius incident) doesn't take down the controller for the rest of the fleet.
 - Upgrade cadence of the engine cluster is decoupled from workload upgrades — I upgrade the engine on a slower, more conservative schedule.
@@ -67,7 +67,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://gitlab.com/zencity/zc-gitops.git
+    repoURL: https://gitlab.com/<your-org>/gitops-repo.git
     path: applicationsets/
     targetRevision: main
   destination:
@@ -108,7 +108,7 @@ spec:
     spec:
       project: addons
       source:
-        repoURL: https://gitlab.com/zencity/zc-gitops.git
+        repoURL: https://gitlab.com/<your-org>/gitops-repo.git
         path: charts/cert-manager
         targetRevision: main
         helm:
@@ -187,7 +187,7 @@ Migrating an addon from Terraform Helm to ArgoCD without downtime:
 
 <Steps>
 
-1. **Author the chart** under `zc-gitops/charts/<addon>/` matching the current Terraform `helm_release` values.
+1. **Author the chart** under `gitops-repo/charts/<addon>/` matching the current Terraform `helm_release` values.
 
 2. **Add the ApplicationSet** but with `syncPolicy.automated: {}` *off* — so it doesn't auto-apply yet.
 
@@ -209,7 +209,7 @@ The first migrations were painful because classic Diff would flag dozens of cosm
 
 ## Where it landed
 
-By layoff (May 13, 2026), only `karpenter` and the deprecating `nginx-ingress` remained on Terraform-managed Helm. Every other addon is reconciled by ArgoCD ApplicationSets from `zc-gitops`. Karpenter is intentionally last because its `helm_release` is referenced by the EKS module — moving it requires module refactoring rather than a clean addon swap.
+As of mid-May 2026, only `karpenter` and the deprecating `nginx-ingress` remained on Terraform-managed Helm. Every other addon is reconciled by ArgoCD ApplicationSets from `gitops-repo`. Karpenter is intentionally last because its `helm_release` is referenced by the EKS module — moving it requires module refactoring rather than a clean addon swap.
 
 ## Related
 

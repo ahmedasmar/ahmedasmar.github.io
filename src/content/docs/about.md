@@ -7,7 +7,7 @@ description: Ahmad Asmar — Staff DevOps / Platform Lead. 6+ years across AWS, 
 
 I'm a **Staff DevOps / Platform Lead** with **6+ years scaling cloud-native infrastructure across AWS, GCP, and Azure**. The last three of those as senior platform owner for a SaaS-scale AWS platform — built from a hybrid Azure+AWS estate into a 20-account, 4-region, 20-EKS-cluster system serving 25+ microservices to 16+ named government customers across the US and UK.
 
-I was the **sole DevOps engineer at Zencity for the first 18 months** (May 2023 → Nov 2024), then primary IC + de-facto platform owner for the next 18. When the eventual Team Lead joined, I was onboarding *him* onto the stack I'd built.
+I was the **sole DevOps engineer at the company for the first 18 months** (May 2023 → Nov 2024), then primary IC + de-facto platform owner for the next 18. When the eventual Team Lead joined, I was onboarding *him* onto the stack I'd built.
 
 ## Career
 
@@ -37,9 +37,9 @@ The shape of my work the last 3 years:
 ## Style
 
 - **Primary-source bias.** I trust `git log`, AWS API responses, and `kubectl get` over what a doc says it should be. The hardest production problems are always the ones where the doc and reality disagree.
-- **Validated rollouts.** New patterns get piloted on `lab-staging` first. Then one staging cluster. Then the rest. Then prod. Each step proves the next. ([Cross-account TGB](/projects/cross-account-tgb/) shipped to 6 staging clusters in one day *after* a 1-day pilot.)
+- **Validated rollouts.** New patterns get piloted on a single cluster first. Then one staging cluster. Then the rest. Then prod. Each step proves the next. ([Cross-account TGB](/projects/cross-account-tgb/) shipped to six staging clusters in one day *after* a 1-day pilot.)
 - **Sequencing matters.** Before-compute on EKS addons; cert renewal before webhook reload; pod readiness gate before rolling deploy. Most production bugs are race conditions in disguise.
-- **Built for the next engineer.** Every reusable pattern I built at Zencity has either become a [Claude Code skill](https://github.com/ahmedasmar/devops-claude-skills) or a [Terraform module](https://github.com/ahmedasmar/terraform-aws-gitlab-docker-autoscaler-runner) so the *next* engineer doesn't have to re-derive it.
+- **Built for the next engineer.** Every reusable pattern I've shipped has either become a [Claude Code skill](https://github.com/ahmedasmar/devops-claude-skills) or a [Terraform module](https://github.com/ahmedasmar/terraform-aws-gitlab-docker-autoscaler-runner) so the *next* engineer doesn't have to re-derive it.
 
 ## Certifications
 

@@ -29,14 +29,14 @@ This repository is the curated set I built for **infrastructure / platform engin
 
 ## Why it works
 
-Each skill captures **production patterns** that took me time to get right at Zencity — not generic tutorials. `argocd-eks-cluster-onboard` is the same Pod-Identity-based cluster-registration flow I built for `shared-staging-devops` and `shared-prod-devops`; `aws-sso-auth` is the recovery flow I ran multiple times a day across a 20-account estate.
+Each skill captures **production patterns** that took me time to get right at SaaS scale — not generic tutorials. `argocd-eks-cluster-onboard` is the same Pod-Identity-based cluster-registration flow I built for a multi-cluster GitOps engine; `aws-sso-auth` is the recovery flow I ran multiple times a day across a 20-account AWS estate.
 
-The skills are also **chainable**: when a user says *"a new lab-prod EKS cluster is ready, hook it up to ArgoCD"*, Claude Code can invoke `aws-sso-auth` (to refresh credentials) then `argocd-eks-cluster-onboard` (to do the work) without the user wiring them together.
+The skills are also **chainable**: when a user says *"a new EKS cluster is ready, hook it up to ArgoCD"*, Claude Code can invoke `aws-sso-auth` (to refresh credentials) then `argocd-eks-cluster-onboard` (to do the work) without the user wiring them together.
 
 ## Track record
 
 - **158 stars · 32 forks** as of May 16, 2026
-- Last commit May 14, 2026 (continues to be maintained)
+- Actively maintained (as of May 2026)
 - Listed in community-curated awesome-claude-code lists
 
 ## Related

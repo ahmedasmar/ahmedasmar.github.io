@@ -3,7 +3,7 @@ title: Kyverno fleet rollout — policy-as-code on every cluster
 description: Auto-PDB ClusterPolicy on every workload, observation-VPA generation, and CRD drift suppression — Kyverno shipped fleet-wide across every staging and prod EKS cluster.
 ---
 
-> **Sep 18, 2025 — initial fleet-wide rollout.** **Apr–May 2026 — migration to ArgoCD-managed Kyverno + policy expansion (19 commits in `zc-gitops`).** Kyverno is the policy engine that catches "no PDB on this Deployment" *and* the engine that generates VPAs.
+> **Sep 18, 2025 — initial fleet-wide rollout.** **Apr–May 2026 — migration to ArgoCD-managed Kyverno + policy expansion.** Kyverno is the policy engine that catches "no PDB on this Deployment" *and* the engine that generates VPAs.
 
 ## The brief
 
@@ -52,7 +52,7 @@ Every multi-replica Deployment that ships without a PDB gets one auto-generated.
 
 This is the more interesting policy. Every Deployment **and** StatefulSet across the fleet gets an `auto-generated observation-mode VPA` so we have right-sizing data without having to author per-workload VPAs.
 
-The design call here ([decisions-log.md Decision 15](https://github.com/ahmedasmar)) was to split the rule by kind rather than have one rule mutate both `Deployment` and `StatefulSet`:
+The design call was to split the rule by kind rather than have one rule mutate both `Deployment` and `StatefulSet`:
 
 ```yaml
 rules:
@@ -73,7 +73,7 @@ Kyverno's chart renders `labels: {}` / `annotations: {}` on its CRDs; Kubernetes
 
 ## How it's deployed
 
-After the initial Sep 2025 fleet-wide rollout (via Terraform Helm), Kyverno was migrated to an ArgoCD ApplicationSet in April–May 2026 — **19 commits in `zc-gitops`** during the migration window. The ApplicationSet fans Kyverno to every workload cluster from a single Helm chart in Git; new clusters get Kyverno automatically.
+After the initial Sep 2025 fleet-wide rollout (via Terraform Helm), Kyverno was migrated to an ArgoCD ApplicationSet in April–May 2026. The ApplicationSet fans Kyverno to every workload cluster from a single Helm chart in Git; new clusters get Kyverno automatically.
 
 Webhook HA — 2 replicas in prod for resilience against pod restarts during cert rotations. (The cert-manager / webhook race is its own gotcha; pin the `cert-manager` Application sync wave so the cert is renewed before the webhook reload.)
 

@@ -26,7 +26,7 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 			href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
 		/>
 		<meta property="og:title" content="Ahmad Asmar — Staff DevOps / Platform Lead" />
-		<meta property="og:description" content="3 years building Zencity's AWS-native platform. 20 EKS clusters, 4 regions, 25+ microservices. Open-source maintainer." />
+		<meta property="og:description" content="6+ years scaling cloud-native infrastructure across AWS, GCP, and Azure. Senior platform owner for a 20-cluster, 4-region EKS platform. Open-source maintainer." />
 		<meta property="og:url" content="https://ahmedasmar.github.io" />
 		<meta property="og:type" content="website" />
 		<meta name="twitter:card" content="summary_large_image" />
@@ -71,15 +71,15 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 				<p>
 					<strong>Six+ years</strong> scaling cloud-native infrastructure across AWS, GCP,
 					and Azure. The last three of those as senior platform owner for a SaaS-scale
-					AWS-native platform (Zencity, via ASAL Technologies): grown from a hybrid
-					Azure+AWS estate into a <strong>20-account, 4-region, 20-EKS-cluster</strong>
-					system serving 25+ microservices and 20+ government customers across the US and
-					UK. Sole DevOps engineer for the first <strong>18 months</strong>, then primary
-					IC for the next 18. The migration close-out shipped with zero customer-visible
+					AWS-native platform: grown from a hybrid Azure+AWS estate into a
+					<strong>20-account, 4-region, 20-EKS-cluster</strong> system serving 25+
+					microservices and 20+ government customers across the US and UK. Sole DevOps
+					engineer for the first <strong>18 months</strong>, then primary IC for the next
+					18. The Azure-to-AWS migration close-out shipped with zero customer-visible
 					downtime; the last fleet-wide EKS upgrade landed in <strong>two working days</strong>.
 				</p>
 				<p>
-					Before Zencity: <strong>Freightos</strong> (2021–2023) — GCP, Kubernetes,
+					Before that: <strong>Freightos</strong> (2021–2023) — GCP, Kubernetes,
 					GitOps with ArgoCD, monitoring; <strong>PDF Solutions</strong> (2020–2021) —
 					cloud infrastructure-as-code; plus two years of IT-support roots at
 					<strong>Partners for Sustainable Development</strong> and
@@ -141,9 +141,9 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 						<p class="ej-work-blurb">
 							Self-authored Terraform module powering self-service GitLab runner fleets:
 							100% Spot, attribute-based instance selection, Fleeting plugin for the
-							Docker Autoscaler executor, multi-arch. The module that runs the entire
-							Zencity CI fleet — and 3,767 downloads says other organisations had the
-							same problem.
+							Docker Autoscaler executor, multi-arch. The module that runs a
+							production CI fleet at SaaS scale — and 3,767 downloads says other
+							organisations had the same problem.
 						</p>
 						<div class="ej-work-meta">
 							<span class="chip signal">3,767 downloads</span>
@@ -184,8 +184,8 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 						<p class="ej-work-blurb">
 							ALB in one AWS account, EKS workloads in another — the textbook answer
 							puts an NLB in each spoke account. With AWS LBC v3, you can register pod
-							IPs directly into a cross-account target group. Validated on lab-staging,
-							rolled to all 6 staging clusters in a single day.
+							IPs directly into a cross-account target group. Validated on a pilot
+							cluster, then rolled to all six staging clusters in a single day.
 						</p>
 						<div class="ej-work-meta">
 							<span class="chip">AWS LBC v3</span>
@@ -229,7 +229,7 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 							Auto-PDB ClusterPolicy on every multi-replica Deployment fleet-wide.
 							Observation-VPA generation via a separate-by-kind rule design. CRD
 							drift suppression for ArgoCD. Migrated from Terraform Helm onto an
-							ApplicationSet — 19 commits in <code>zc-gitops</code>.
+							ApplicationSet.
 						</p>
 						<div class="ej-work-meta">
 							<span class="chip signal">Fleet-wide Sep 2025</span>
@@ -248,7 +248,7 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 							Crossplane <em>— IaC v2 bootstrap</em>
 						</div>
 						<p class="ej-work-blurb">
-							Crossplane v2.5.3 (Upbound) bootstrapped on the shared devops
+							Crossplane v2.5.3 (Upbound) bootstrapped on dedicated devops
 							clusters in Pipeline mode. The first usable Composition —
 							<code>AppWorkloadBucket</code> with S3 versioning + lifecycle + CORS
 							— shipped to prod. Declarative AWS resources reconciled by k8s
@@ -362,9 +362,10 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 							Automating Pod Disruption Budgets <em>with Kyverno</em>
 						</div>
 						<p class="ej-work-blurb">
-							How Zencity used Kyverno to auto-generate PDBs for every microservice
-							that lacked one — preventing service downtime when Karpenter consolidates
-							nodes and closing the operational gap of "we forgot to add a PDB."
+							How a SaaS platform used Kyverno to auto-generate PDBs for every
+							microservice that lacked one — preventing service downtime when
+							Karpenter consolidates nodes and closing the operational gap of "we
+							forgot to add a PDB."
 						</p>
 						<div class="ej-work-meta">
 							<span class="chip signal">Zencity Engineering</span>

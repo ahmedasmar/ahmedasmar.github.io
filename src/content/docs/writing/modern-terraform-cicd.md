@@ -3,7 +3,7 @@ title: Modern Terraform CI/CD on GitLab
 description: Replacing "push to staging and hope" with a five-stage MR-based flow. Validate → Checkov → plan-in-MR → Infracost → auto-apply. Took fleet pipelines from 8:52 to 5:36 — a 37% reduction.
 ---
 
-> Built and shipped fleet-wide in December 2025. Headline metric: **37% faster pipelines (8:52 → 5:36)** across every Terraform project at Zencity.
+> Built and shipped fleet-wide in December 2025. Headline metric: **37% faster pipelines (8:52 → 5:36)** across every Terraform project in the fleet.
 
 ## TL;DR
 

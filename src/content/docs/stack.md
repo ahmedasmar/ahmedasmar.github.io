@@ -11,8 +11,8 @@ Quick-reference of what I ran in production. Useful if you're sizing whether my 
 
 | Item | Value |
 |---|---|
-| AWS Organizations | 2 (staging + prod) + acquired Commonplace org |
-| AWS accounts | 20 Zencity SSO-managed (9 staging + 11 prod) + ~4 Commonplace = 24 |
+| AWS Organizations | 2 (staging + prod) + acquired-company org |
+| AWS accounts | 20 SSO-managed (9 staging + 11 prod) + an acquired-company org (~4 more) |
 | Identity provider | JumpCloud SAML → AWS Identity Center |
 | Landing zone | CloudZone-managed via LZCZ Control Tower; SCPs at OU level |
 | Regions | `us-east-1`, `eu-west-1`, `ca-central-1`, `eu-west-2` + GCP integration |
@@ -33,13 +33,13 @@ Quick-reference of what I ran in production. Useful if you're sizing whether my 
 - VPC endpoints for AWS service traffic (no NAT cost for AWS APIs)
 - **alterNAT** for cost-optimised egress
 - Route 53 multi-account DNS
-- AWS WAF (with tuning per Commonplace prod)
+- AWS WAF (with per-environment tuning)
 
 **Data / storage**
 
 - RDS PostgreSQL (engine upgrades, Multi-AZ prod)
 - ElastiCache Redis
-- MongoDB Atlas (Organization Owner for Commonplace cluster)
+- MongoDB Atlas (Organization Owner on the acquired-company cluster)
 - io2 → **gp3 above 400 GiB** (gp3 stripes to 12,000 IOPS + 500 MiB/s baseline at lower cost)
 - S3 (public-bucket allowlist via SCPs)
 - EFS access points for shared workloads
@@ -72,7 +72,7 @@ Quick-reference of what I ran in production. Useful if you're sizing whether my 
 
 **ArgoCD**
 
-- Deployed on dedicated `shared-staging-devops` + `shared-prod-devops` clusters
+- Deployed on dedicated staging + prod devops clusters
 - ApplicationSets for multi-cluster fan-out
 - App-of-apps + self-managing bootstrap
 - Server-Side Diff enabled at controller level
@@ -87,7 +87,7 @@ Quick-reference of what I ran in production. Useful if you're sizing whether my 
 - Auto-generates HTTPRoutes for nginx-backed services (Gateway API migration support)
 - Internal chart registry
 
-**Service mesh / Gateway API** (in-flight at layoff)
+**Service mesh / Gateway API** (in-flight as of May 2026)
 
 - Istio **Ambient** (sidecar-less) — Phase 0/1/2.0/2.1/2.2 shipped
 - Gateway API + HTTPRoute (replacing nginx Ingress)
@@ -128,7 +128,7 @@ Quick-reference of what I ran in production. Useful if you're sizing whether my 
 
 **Runners** ([detailed architecture](/writing/scale-to-zero-runners/))
 
-- Self-hosted on EC2 (Zencity Group level)
+- Self-hosted on EC2 (group-level shared fleet)
 - ARM64 (Graviton) + 100% Spot + ASG autoscaling
 - Attribute-based instance selection (no fixed-type fragility)
 - Per-instance 2-job reuse (amortises boot)
@@ -154,7 +154,7 @@ Quick-reference of what I ran in production. Useful if you're sizing whether my 
 **Terraform** — primary IaC
 
 - Multi-account state with cross-account state-read patterns
-- Modules in `zc-terraform-modules` (eks-addons, cdn-ingress-alb, gitlab-runner, etc.)
+- Shared module library (eks-addons, cdn-ingress-alb, gitlab-runner, etc.)
 - Provider lifecycle (AWS provider 4.x → 5.x → 6.x upgrades)
 - Custom dev tool: `tfmv` (state-move helper)
 
@@ -185,7 +185,7 @@ Quick-reference of what I ran in production. Useful if you're sizing whether my 
 
 **Pingdom** — synthetic checks (legacy)
 
-**New Relic** — legacy, deprecating (Commonplace)
+**New Relic** — legacy, being deprecated on the acquired-company stack
 
 ---
 
@@ -218,7 +218,7 @@ Quick-reference of what I ran in production. Useful if you're sizing whether my 
 
 ---
 
-## Version snapshot at layoff (May 14, 2026)
+## Version snapshot (as of May 2026)
 
 | Component | Version |
 |---|---|

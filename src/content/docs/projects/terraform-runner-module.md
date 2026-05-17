@@ -8,7 +8,7 @@ description: A scale-to-zero GitLab Runner platform on AWS — 3,767 downloads o
 >
 > **3,767 downloads · v0.6.8 · 2 years of maintenance · GPL-3.0**
 
-A Terraform module for deploying GitLab Runner with the new **Docker Autoscaler executor** on AWS. The module that powers the entire self-service GitLab runner platform I built at Zencity — and that 3,767 downloads says other organisations had the same problem.
+A Terraform module for deploying GitLab Runner with the new **Docker Autoscaler executor** on AWS. The module that powers a SaaS-scale self-service GitLab runner fleet I built in production — and that 3,767 downloads says other organisations had the same problem.
 
 ## Why this exists
 
@@ -73,7 +73,7 @@ Graceful drain pattern. The ASG can't externally terminate a runner that's still
 cpu_manufacturers = ["intel", "amd", "amazon-web-services"]
 ```
 
-x86_64 *and* ARM64 (Graviton) from the same module. At Zencity, the runner fleet ran ARM64 Graviton for ~25% cost reduction over equivalent x86 with no perf regression on CI loads.
+x86_64 *and* ARM64 (Graviton) from the same module. In production, the runner fleet ran ARM64 Graviton for ~25% cost reduction over equivalent x86 with no perf regression on CI loads.
 
 ### S3 cache with configurable lifecycle
 
@@ -116,9 +116,9 @@ Five required-ish variables; everything else is opinionated defaults that match 
 ## Track record
 
 - **Created Feb 25, 2024** · **Latest v0.6.8 — Jan 15, 2026** · **GPL-3.0**
-- **3,767 downloads** on the Terraform Registry (real adoption beyond Zencity)
+- **3,767 downloads** on the Terraform Registry (adoption well beyond the original use case)
 - **2 years of maintenance** — provider compatibility (AWS provider 4.x → 5.x → 6.x), Spot allocation strategy upgrades, lifecycle filter syntax migration
-- Real production workhorse — runs the entire Zencity GitLab CI fleet (compute-optimised + memory-optimised pools, multi-arch, multi-account)
+- Real production workhorse — powers a SaaS-scale CI fleet (compute-optimised + memory-optimised pools, multi-arch, multi-account)
 
 ## Related
 

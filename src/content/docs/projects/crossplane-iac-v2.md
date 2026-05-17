@@ -3,7 +3,7 @@ title: Crossplane — IaC v2 bootstrap
 description: Crossplane v2.5.3 (Upbound) on the shared devops clusters. AppWorkloadBucket Composition with S3 versioning + lifecycle + CORS. The first step toward declarative cloud resources reconciled by Kubernetes controllers instead of `terraform apply`.
 ---
 
-> **Apr 21 – May 11, 2026 · 18 commits · ~10 merged MRs.** Crossplane v2.5.3 (Upbound) bootstrapped on `shared-staging-devops` + `shared-prod-devops` in Pipeline mode. The first usable Composition — `AppWorkloadBucket` for managed S3 buckets — shipped to prod. The IaC-v2 vision: declarative AWS resources reconciled by k8s controllers instead of `terraform apply`.
+> **Q2 2026 · ~3 weeks of focused work.** Crossplane v2.5.3 (Upbound) bootstrapped on dedicated staging and prod devops clusters in Pipeline mode. The first usable Composition — `AppWorkloadBucket` for managed S3 buckets — shipped to prod. The IaC-v2 vision: declarative AWS resources reconciled by k8s controllers instead of `terraform apply`.
 
 ## The brief
 
@@ -15,7 +15,7 @@ Terraform is great at provisioning, but the gap is *reconciliation*. Once an `aw
 
 ### Bootstrap to prod
 
-Crossplane v2.5.3 (Upbound) installed on both **`shared-staging-devops`** and **`shared-prod-devops`** clusters. Pipeline mode — the modern function-based composition flow. Webhook scaled to **2 replicas in prod** for HA. Provider pods sized with `requests == limits` for predictable footprint (uniform-pressure scheduling — important when Karpenter is deciding what to bin-pack).
+Crossplane v2.5.3 (Upbound) installed on both **staging and prod devops clusters**. Pipeline mode — the modern function-based composition flow. Webhook scaled to **2 replicas in prod** for HA. Provider pods sized with `requests == limits` for predictable footprint (uniform-pressure scheduling — important when Karpenter is deciding what to bin-pack).
 
 ### Schema alignment with Upbound provider-aws v2.5.3
 
@@ -30,7 +30,7 @@ Provider AWS v2.5.3 ships new managed-resource CRD shapes; existing Compositions
 This is the proof point. An `AppWorkloadBucket` XR is a typed, opinionated S3 bucket:
 
 ```yaml
-apiVersion: storage.zencity.io/v1alpha1
+apiVersion: storage.platform.io/v1alpha1
 kind: AppWorkloadBucket
 metadata:
   name: my-service-uploads
@@ -46,9 +46,9 @@ The Composition expands that into a `Bucket`, a `BucketVersioning` (enabled), a 
 
 Three subtle fixes that took the Composition from "demo" to "actually works":
 
-- **`fix: correct S3 IAM action names for CORS + Lifecycle`** — the AWS Lifecycle/CORS APIs use action names that don't match what the provider docs suggest verbatim; Composition output had to be hand-validated against an actual `BucketCORSConfiguration` apply.
-- **`feat(crossplane): wire up bucket versioning + lifecycle in AppWorkloadBucket`** — versioning and lifecycle are separate resources in the AWS provider, each with their own readiness signals; the Composition's `ReadinessCheck` had to wait on the conjunction.
-- **`fix: scale webhook components to 2 replicas in prod`** — Crossplane's webhook is the gate for every XR reconcile; one replica in prod is a single point of failure during pod restarts.
+- **Correct S3 IAM action names for CORS + Lifecycle** — the AWS Lifecycle/CORS APIs use action names that don't match what the provider docs suggest verbatim; Composition output had to be hand-validated against an actual `BucketCORSConfiguration` apply.
+- **Wire up bucket versioning + lifecycle in `AppWorkloadBucket`** — versioning and lifecycle are separate resources in the AWS provider, each with their own readiness signals; the Composition's `ReadinessCheck` had to wait on the conjunction.
+- **Scale webhook to 2 replicas in prod** — Crossplane's webhook is the gate for every XR reconcile; one replica in prod is a single point of failure during pod restarts.
 
 ## Why this matters
 
@@ -60,7 +60,7 @@ It's also the right abstraction for **multi-tenant** patterns. An `AppWorkloadDa
 
 - **Bootstrap shipped to prod** ✓
 - **AppWorkloadBucket Composition real and usable** ✓
-- **Broader scope-out paused at layoff** — was queued: `AppWorkloadDatabase` (managed RDS DB + user provisioning), `AppWorkloadCache` (ElastiCache Redis), then app-team self-service via these XRs
+- **Broader scope-out paused** — was queued: `AppWorkloadDatabase` (managed RDS DB + user provisioning), `AppWorkloadCache` (ElastiCache Redis), then app-team self-service via these XRs
 
 The IaC-v2 vision was mine. The bootstrap shipped. The scope-out is the unfinished work — but the platform foundation is in place.
 

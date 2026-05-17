@@ -127,7 +127,7 @@ Each runner pool gets its own bucket. Lifecycle policy bounds cost. Critical for
 A fleet running 200 CI jobs/day at ~5 min/job, 2-job reuse → ~100 instance-hours/day. On a `c6g.large` Spot at ~$0.025/hr that's **~$2.50/day in worker compute** plus the t4g.small manager (~$8/month). Compare to a fixed 4× `c6g.large` On-Demand always-on fleet ($240/month) — **roughly 7-8× cheaper** for the same throughput, with better instance availability via attribute-based selection.
 
 <Aside title="The numbers are deliberately conservative">
-Real fleet usage at Zencity bursted into the hundreds of jobs concurrently during a deploy window, then sat near-idle overnight. The "always-on" baseline would have had to size for the peak — multiplying the cost gap further.
+Real production usage bursted into the hundreds of jobs concurrently during deploy windows, then sat near-idle overnight. The "always-on" baseline would have had to size for the peak — multiplying the cost gap further.
 </Aside>
 
 ## Related

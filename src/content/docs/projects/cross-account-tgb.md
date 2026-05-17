@@ -3,7 +3,7 @@ title: Cross-account TargetGroupBinding
 description: The signature architecture pattern. ALB in one AWS account, EKS workload in another — no NLB hop. Validated on AWS LBC v3 and rolled to all 6 staging clusters in a single day.
 ---
 
-> **The headline technical pattern I designed at Zencity.** It removes the NLB that normally sits between an ALB in one AWS account and EKS pods in a different account's cluster.
+> **The headline technical pattern I designed for a multi-account AWS estate.** It removes the NLB that normally sits between an ALB in one AWS account and EKS pods in a different account's cluster.
 
 ## The problem this solves
 
@@ -66,9 +66,9 @@ Without care, the ALB health-check probes can race the pod readiness gate and pr
 
 ## Result
 
-- **Validated end-to-end on `lab-staging`** (cluster account) ↔ shared-edge account.
-- **Rolled to all 6 staging clusters in one day** (lab, shared, platform, engage, organic, survey) after the pilot.
-- Became the upstream enabler for the Gateway API + Istio Ambient migration Phase 2.2 — Gateway API HTTPRoutes target the cross-account TG without a per-cluster NLB.
+- **Validated end-to-end on a pilot cluster** ↔ shared-edge account.
+- **Rolled to all six staging clusters in a single day** after the pilot.
+- Became the upstream enabler for the Gateway API + Istio Ambient migration — Gateway API HTTPRoutes target the cross-account TG without a per-cluster NLB.
 
 ## Why it matters
 
