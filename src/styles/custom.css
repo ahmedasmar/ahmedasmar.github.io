@@ -34,7 +34,7 @@
 	--sl-color-accent:       var(--cobalt);
 	--sl-color-accent-low:   var(--cobalt-soft);
 	--sl-color-accent-high:  var(--cobalt-deep);
-	--sl-color-white:        var(--paper);
+	--sl-color-white:        var(--ink);
 	--sl-color-gray-1:       var(--ink);
 	--sl-color-gray-2:       var(--ink-soft);
 	--sl-color-gray-3:       var(--ink-mute);
@@ -94,17 +94,22 @@ body {
 /* Headings on inner Starlight pages — Fraunces with optical sizing */
 :where(.sl-markdown-content) h1,
 :where(.sl-markdown-content) h2,
-:where(.sl-markdown-content) h3 {
+:where(.sl-markdown-content) h3,
+main > h1,
+.page-title {
 	font-family: var(--font-display);
 	font-variation-settings: 'opsz' 60, 'SOFT' 50;
 	letter-spacing: -0.012em;
 	font-weight: 600;
 }
 
-:where(.sl-markdown-content) h1 {
+:where(.sl-markdown-content) h1,
+main > h1,
+.page-title {
 	font-variation-settings: 'opsz' 144, 'SOFT' 30;
 	font-weight: 500;
 	letter-spacing: -0.022em;
+	color: var(--ink);
 }
 
 :where(.sl-markdown-content) h2 {
