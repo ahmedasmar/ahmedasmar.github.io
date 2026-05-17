@@ -30,6 +30,18 @@ const volume = `Vol. III · No. ${new Date().getFullYear() - 2022}`;
 		<meta property="og:url" content="https://ahmedasmar.github.io" />
 		<meta property="og:type" content="website" />
 		<meta name="twitter:card" content="summary_large_image" />
+		<script is:inline>
+			// Set theme before paint — match Starlight's behaviour so the home page
+			// respects OS preference + any explicit choice the user made on inner pages.
+			(function () {
+				try {
+					var stored = localStorage.getItem('starlight-theme');
+					var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+					var theme = stored && stored !== 'auto' ? stored : (prefersDark ? 'dark' : 'light');
+					document.documentElement.dataset.theme = theme;
+				} catch (e) { /* localStorage blocked — fall through to default light */ }
+			})();
+		</script>
 	</head>
 	<body class="ej-body">
 		<main class="ej-landing">
