@@ -18,7 +18,9 @@
 	--cobalt-deep:  #122a4f;
 	--cobalt-soft:  #d6dee8;
 	--cadmium:      #c7541f;
+	--cadmium-strong: #993f17;
 	--cadmium-soft: #f4e0d2;
+	--rule-strong:  #8d8169;
 
 	/* Type */
 	--sl-font:      'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -60,7 +62,9 @@
 	--cobalt-deep:  #bcd1f0;
 	--cobalt-soft:  #1c2e4a;
 	--cadmium:      #e8895a;
+	--cadmium-strong: #e8895a;
 	--cadmium-soft: #2a1f17;
+	--rule-strong:  #5e5343;
 
 	--sl-color-bg:           var(--paper);
 	--sl-color-bg-nav:       var(--paper);
@@ -206,7 +210,7 @@ ul.top-level li > details > summary {
 	padding-bottom: 1px;
 	white-space: nowrap;
 }
-.ej-masthead a:hover { color: var(--cadmium); border-bottom-color: var(--cadmium); }
+.ej-masthead a:hover { color: var(--cadmium-strong); border-bottom-color: var(--cadmium-strong); }
 
 @media (max-width: 640px) {
 	.ej-masthead {
@@ -234,7 +238,7 @@ ul.top-level li > details > summary {
 	font-size: 0.78rem;
 	letter-spacing: 0.18em;
 	text-transform: uppercase;
-	color: var(--cadmium);
+	color: var(--cadmium-strong);
 	margin: 0;
 }
 
@@ -291,10 +295,10 @@ ul.top-level li > details > summary {
 	text-transform: uppercase;
 }
 .ej-rule .label { padding-right: 0.5rem; white-space: nowrap; }
-.ej-rule .ord { color: var(--cadmium); }
+.ej-rule .ord { color: var(--cadmium-strong); }
 .ej-rule .line { display: block; height: 1px; background: var(--rule); min-width: 0; }
 .ej-rule .crosshair {
-	color: var(--rule);
+	color: var(--rule-strong);
 	font-family: var(--sl-font-mono);
 	white-space: nowrap;
 }
@@ -405,7 +409,7 @@ ul.top-level li > details > summary {
 .ej-work-no {
 	font-family: var(--sl-font-mono);
 	font-size: 0.78rem;
-	color: var(--cadmium);
+	color: var(--cadmium-strong);
 	letter-spacing: 0.08em;
 	padding-top: 0.45rem;
 	font-variant-numeric: tabular-nums;
@@ -448,8 +452,8 @@ ul.top-level li > details > summary {
 	background: var(--paper-deep);
 }
 .ej-work-meta .chip.signal {
-	color: var(--cadmium);
-	border-color: var(--cadmium);
+	color: var(--cadmium-strong);
+	border-color: var(--cadmium-strong);
 	background: transparent;
 }
 .ej-work-arrow {
@@ -483,7 +487,7 @@ ul.top-level li > details > summary {
 }
 .ej-practice h3::before {
 	content: '§';
-	color: var(--cadmium);
+	color: var(--cadmium-strong);
 	margin-right: 0.4em;
 	font-style: italic;
 }
@@ -529,8 +533,8 @@ ul.top-level li > details > summary {
 	transition: color 0.25s ease, border-color 0.25s ease;
 }
 .ej-foot .links a:hover {
-	color: var(--cadmium);
-	border-color: var(--cadmium);
+	color: var(--cadmium-strong);
+	border-color: var(--cadmium-strong);
 }
 .ej-foot .meta {
 	font-family: var(--sl-font-mono);
