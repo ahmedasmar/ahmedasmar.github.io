@@ -95,8 +95,7 @@ body {
 :where(.sl-markdown-content) h1,
 :where(.sl-markdown-content) h2,
 :where(.sl-markdown-content) h3,
-main > h1,
-.page-title {
+h1#_top {
 	font-family: var(--font-display);
 	font-variation-settings: 'opsz' 60, 'SOFT' 50;
 	letter-spacing: -0.012em;
@@ -104,12 +103,12 @@ main > h1,
 }
 
 :where(.sl-markdown-content) h1,
-main > h1,
-.page-title {
+h1#_top {
 	font-variation-settings: 'opsz' 144, 'SOFT' 30;
 	font-weight: 500;
 	letter-spacing: -0.022em;
 	color: var(--ink);
+	line-height: 1.05;
 }
 
 :where(.sl-markdown-content) h2 {
