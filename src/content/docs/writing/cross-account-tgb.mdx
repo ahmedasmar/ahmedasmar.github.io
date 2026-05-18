@@ -12,53 +12,52 @@ This page is the design deep-dive that complements the [project page](/projects/
 There are two AWS accounts. Both have VPCs connected via **Transit Gateway** (the platform is peering-free by policy).
 
 ```
-                              Internet
-                                 │
-                                 ▼
-        ┌────────────────────────────────────────────────┐
-        │  AWS account A — "edge" (e.g. shared-staging)   │
-        │                                                 │
-        │   ACM cert     ALB                              │
-        │       │         │                               │
-        │       └────────▶│   Listener :443 → TG-1        │
-        │                 ▼                               │
-        │              TargetGroup-1                       │
-        │               (type: ip)                          │
-        │                  ▲                               │
-        │                  │ pod-IPs registered             │
-        │                  │ (cross-account)                │
-        │                  │                                │
-        │      ┌───────────┴──────────────┐                 │
-        │      │ AWS-assumable role for   │                 │
-        │      │ AWS LBC in account B     │                 │
-        │      └──────────────────────────┘                 │
-        └────────────────────────────────────────────────┘
-                                 │
-                              (TGW)
-                                 │
-        ┌────────────────────────────────────────────────┐
-        │  AWS account B — "workload" (e.g. a workload cluster)│
-        │                                                  │
-        │   EKS cluster                                    │
-        │      │                                           │
-        │      ▼                                           │
-        │   AWS LBC pod ─── Pod Identity ─── IAM role      │
-        │      │                              in account B │
-        │      │                              │            │
-        │      │                              ▼            │
-        │      │            sts:AssumeRole into account A  │
-        │      │                              │            │
-        │      ▼                              │            │
-        │   TargetGroupBinding CRD            │            │
-        │     spec:                           │            │
-        │       targetGroupARN: arn:...:A/TG-1│            │
-        │       serviceRef: my-app-svc        │            │
-        │                                     ▼            │
-        │   App Service ──── pods (account B's pod CIDR) ──┘
-        │                            │
-        │                            ▼
-        │   ALB target health probes → pod IPs (cross-account, via TGW)
-        └────────────────────────────────────────────────┘
+                                 Internet
+                                    │
+                                    ▼
+        ┌────────────────────────────────────────────────────────┐
+        │  AWS account A — "edge" (e.g. shared-staging)          │
+        │                                                        │
+        │    ACM cert      ALB                                   │
+        │        │          │                                    │
+        │        └─────────▶│   Listener :443 → TG-1             │
+        │                   ▼                                    │
+        │              TargetGroup-1                             │
+        │               (type: ip)                               │
+        │                   ▲                                    │
+        │                   │ pod IPs registered                 │
+        │                   │ (cross-account)                    │
+        │                   │                                    │
+        │       ┌───────────┴──────────────┐                     │
+        │       │ AWS-assumable role for   │                     │
+        │       │ AWS LBC in account B     │                     │
+        │       └──────────────────────────┘                     │
+        └────────────────────────────────────────────────────────┘
+                                    │
+                                  (TGW)
+                                    │
+        ┌────────────────────────────────────────────────────────┐
+        │  AWS account B — "workload" (cluster account)          │
+        │                                                        │
+        │    EKS cluster                                         │
+        │       │                                                │
+        │       ▼                                                │
+        │    AWS LBC pod ─── Pod Identity ─── IAM role           │
+        │       │                              in account B      │
+        │       │                              │                 │
+        │       │                              ▼                 │
+        │       │            sts:AssumeRole into account A       │
+        │       │                              │                 │
+        │       ▼                              ▼                 │
+        │    TargetGroupBinding CRD                              │
+        │      spec:                                             │
+        │        targetGroupARN: arn:...:A/TG-1                  │
+        │        serviceRef: my-app-svc                          │
+        │                                                        │
+        │    App Service ─── pods (in B's pod CIDR)              │
+        │                                                        │
+        │    ALB health probes → pod IPs (via TGW)               │
+        └────────────────────────────────────────────────────────┘
 ```
 
 ## The IAM thread

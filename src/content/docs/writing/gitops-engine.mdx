@@ -10,37 +10,37 @@ This page complements the [project page](/projects/gitops-engine/) with the desi
 ## The architecture
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                                                                          │
-│   ┌───────────────────────────────────────────────┐                      │
-│   │  gitops-repo (Git, the source of truth)         │                      │
-│   │    - bootstrap/                               │                      │
-│   │    - applicationsets/                         │                      │
-│   │    - cluster-overrides/                       │                      │
-│   └───────────────────────────────────────────────┘                      │
-│                       │                                                  │
-│                       ▼                                                  │
-│   ┌───────────────────────────────────────────────┐                      │
-│   │  ArgoCD on staging-devops              │                      │
-│   │  ArgoCD on prod-devops                 │                      │
-│   │    - app-of-apps bootstrap                    │                      │
-│   │    - ApplicationSet controller                │                      │
-│   │    - Server-Side Diff enabled                 │                      │
-│   │    - webhook HA (2 replicas in prod)          │                      │
-│   │    - JumpCloud SSO                            │                      │
-│   └───────────────────────────────────────────────┘                      │
-│         │           │           │            │           │               │
-│         ▼           ▼           ▼            ▼           ▼               │
-│   ┌─────────┐ ┌─────────┐ ┌─────────┐  ┌─────────┐ ┌─────────┐           │
-│   │ lab     │ │ shared  │ │ platform│  │ engage  │ │ survey  │  ...      │
-│   │ workload│ │ workload│ │ workload│  │ workload│ │ workload│           │
-│   │  EKS    │ │  EKS    │ │  EKS    │  │  EKS    │ │  EKS    │           │
-│   └─────────┘ └─────────┘ └─────────┘  └─────────┘ └─────────┘           │
-│                                                                          │
-│   Each workload cluster is registered to ArgoCD via                       │
-│   Pod Identity + AssumeRole — NO bearer tokens.                           │
-│                                                                          │
-└────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                                                                      │
+│   ┌──────────────────────────────────────────────┐                   │
+│   │  gitops-repo (Git, source of truth)          │                   │
+│   │    - bootstrap/                              │                   │
+│   │    - applicationsets/                        │                   │
+│   │    - cluster-overrides/                      │                   │
+│   └──────────────────────────────────────────────┘                   │
+│                      │                                               │
+│                      ▼                                               │
+│   ┌──────────────────────────────────────────────┐                   │
+│   │  ArgoCD on staging-devops                    │                   │
+│   │  ArgoCD on prod-devops                       │                   │
+│   │    - app-of-apps bootstrap                   │                   │
+│   │    - ApplicationSet controller               │                   │
+│   │    - Server-Side Diff enabled                │                   │
+│   │    - webhook HA (2 replicas in prod)         │                   │
+│   │    - JumpCloud SSO                           │                   │
+│   └──────────────────────────────────────────────┘                   │
+│         │       │       │       │       │                            │
+│         ▼       ▼       ▼       ▼       ▼                            │
+│    ┌────────┐┌────────┐┌────────┐┌────────┐┌────────┐                │
+│    │ lab    ││ shared ││platform││ engage ││ survey │                │
+│    │workload││workload││workload││workload││workload│                │
+│    │  EKS   ││  EKS   ││  EKS   ││  EKS   ││  EKS   │                │
+│    └────────┘└────────┘└────────┘└────────┘└────────┘                │
+│                                                                      │
+│   Each workload cluster is registered to ArgoCD via                  │
+│   Pod Identity + AssumeRole — NO bearer tokens.                      │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Why two devops clusters

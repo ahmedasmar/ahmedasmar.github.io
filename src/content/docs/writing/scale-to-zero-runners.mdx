@@ -10,20 +10,20 @@ The [Terraform module](/projects/terraform-runner-module/) implements a pattern 
 ## The shape
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│  GitLab CI job submitted                                           │
-└────────────────────────────────────────────────────────────────────┘
-                  │
-                  ▼ poll / webhook
-┌────────────────────────────────────────────────────────────────────┐
-│  GitLab Runner Manager (t4g.small, always-on, ARM64)                │
-│    - registered with GitLab (auth_token)                            │
-│    - configured with the Docker Autoscaler executor                 │
-│    - uses the Fleeting plugin: provider = aws                       │
-└────────────────────────────────────────────────────────────────────┘
-                  │
-                  ▼ Fleeting → SetDesiredCapacity(+1) on the ASG
-┌────────────────────────────────────────────────────────────────────┐
+┌──────────────────────────────────────────────────────────────────────┐
+│  GitLab CI job submitted                                             │
+└──────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼  poll / webhook
+┌──────────────────────────────────────────────────────────────────────┐
+│  GitLab Runner Manager (t4g.small, always-on, ARM64)                 │
+│    - registered with GitLab (auth_token)                             │
+│    - configured with the Docker Autoscaler executor                  │
+│    - uses the Fleeting plugin: provider = aws                        │
+└──────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼  Fleeting → SetDesiredCapacity(+1) on the ASG
+┌──────────────────────────────────────────────────────────────────────┐
 │  Worker ASG                                                          │
 │    min_size = 0, desired_capacity = 0  (literal scale-to-zero)       │
 │    MixedInstancesPolicy:                                             │
@@ -32,22 +32,22 @@ The [Terraform module](/projects/terraform-runner-module/) implements a pattern 
 │      - spot_allocation_strategy = price-capacity-optimized           │
 │      - capacity_rebalance = false                                    │
 │      - protect_from_scale_in = true                                  │
-└────────────────────────────────────────────────────────────────────┘
-                  │
-                  ▼ EC2 spot instance launches with custom AMI (Packer)
-┌────────────────────────────────────────────────────────────────────┐
-│  Worker EC2 (lifetime: ~minutes per job, 2 jobs / instance default) │
-│    - Docker pre-installed in the AMI                                │
-│    - Fleeting plugin SSHes in & runs the GitLab job in Docker       │
-│    - On job end: instance terminated by Fleeting (or scale-in)      │
-└────────────────────────────────────────────────────────────────────┘
-                  │
-                  ▼ Job artifacts + cache pushed to S3
-┌────────────────────────────────────────────────────────────────────┐
+└──────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼  EC2 spot instance launches with custom AMI (Packer)
+┌──────────────────────────────────────────────────────────────────────┐
+│  Worker EC2 (lifetime: ~minutes per job, 2 jobs / instance default)  │
+│    - Docker pre-installed in the AMI                                 │
+│    - Fleeting plugin SSHes in & runs the GitLab job in Docker        │
+│    - On job end: instance terminated by Fleeting (or scale-in)       │
+└──────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼  Job artifacts + cache pushed to S3
+┌──────────────────────────────────────────────────────────────────────┐
 │  S3 cache bucket (isolated per runner, 30-day lifecycle)             │
-└────────────────────────────────────────────────────────────────────┘
-                  │
-                  ▼ ASG scales back to zero
+└──────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼  ASG scales back to zero
                   [done]
 ```
 
